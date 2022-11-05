@@ -1,34 +1,35 @@
-module fileopen ();
-initial
-begin
+module top(
+);
+
 int fd;
-string g;
-string line;
-fd= $fopen("./file.txt", "r"); //file in same directory of the code folder.
+int mode;
+string hexaddress,filename,flag;
+initial begin
+    $value$plusargs("string=%s",filename);// user specified filename
+    fd = $fopen(filename,"r");   //file in same directory of the code folder.
+    if (fd)
+     begin
+        $display("file is opened  ");
+           end
+    else
+	begin
+      $display("file not opened");
+	$display("%s ,%d",filename,fd);
+	end
+if ($value$plusargs("STRING=%d",flag)) //takes flag has input to determine whether it is working in normal or silent mode.
+     begin
+            if(flag == 0)
+                 $display("System is running in normal mode");
+            else if (flag == 1)
+                 $display("System is running in silent mode");
+      end
 
-if (fd)
-$display("File has opened successfully");
-else
-$display("file not opened");
 
-while (!$feof(fd)) 
-begin
-$fgets(line,fd);
+          while($fscanf(fd,"%d %s",mode,hexaddress)== 2) // scans and get values.
+            $display("%d %s ",mode,hexaddress);
 
-$display("Command: %s", line[0]);
-$display("Address: %s", line[2:7]);
 
-end
-
-if ($value$plusargs("STRING=%s",g))
-begin
-if(g == "normal")
-$display("System is running in normal mode");
-
-else if (g == "silent")
-$display("System is running in silent mode");
-end
-
+   
 $fclose(fd);
 end
-endmodule
+endmodule:top
