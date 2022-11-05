@@ -1,0 +1,34 @@
+# Compile of FILEREAD.sv was successful with warnings.
+vsim -c top +string=READFILE.txt +STRING=0
+# vsim -c top "+string=READFILE.txt" "+STRING=0" 
+# Start time: 15:41:18 on Nov 05,2022
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Warning: N:/Desktop/MSD_PROJECT/FILEREAD.sv(8): (vopt-PLI-3691) Expected a system task, not a system function '$value$plusargs'.
+# ** Note: (vsim-12126) Error and warning message counts have been restored: Errors=0, Warnings=1.
+# Loading sv_std.std
+# Loading work.top(fast)
+run -all
+# file is opened  
+# System is running in normal mode
+#           2 408ed4 
+#           0 10019d94 
+#           2 408ed8 
+#           1 10019d88 
+#           2 408edc 
+quit -sim
+# End time: 15:42:43 on Nov 05,2022, Elapsed time: 0:01:25
+# Errors: 0, Warnings: 6
+vsim -c top +string=READFILE.txt +STRING=0
+# vsim -c top "+string=READFILE.txt" "+STRING=0" 
+# Start time: 15:44:47 on Nov 05,2022
+# ** Note: (vsim-8009) Loading existing optimized design _opt
+# Loading sv_std.std
+# Loading work.top(fast)
+run -all
+# file is opened  
+# System is running in normal mode
+#           2 408ed4 
+#           0 10019d94 
+#           2 408ed8 
+#           1 10019d88 
+#           2 408edc 
