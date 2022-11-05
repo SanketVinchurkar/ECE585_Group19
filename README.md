@@ -4,4 +4,4 @@ Members:
 Sanket Vinchurkar
 Viraj Pashte
 Zoheb Mir
-Sushruth Reddy
+Shushruth Reddy
