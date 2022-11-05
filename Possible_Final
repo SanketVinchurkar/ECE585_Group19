@@ -1,0 +1,34 @@
+module fileopen ();
+initial
+begin
+int fd;
+string g;
+string line;
+fd= $fopen("./file.txt", "r"); //file in same directory of the code folder.
+
+if (fd)
+$display("File has opened successfully");
+else
+$display("file not opened");
+
+while (!$feof(fd)) 
+begin
+$fgets(line,fd);
+
+$display("Command: %s", line[0]);
+$display("Address: %s", line[2:7]);
+
+end
+
+if ($value$plusargs("STRING=%s",g))
+begin
+if(g == "normal")
+$display("System is running in normal mode");
+
+else if (g == "silent")
+$display("System is running in silent mode");
+end
+
+$fclose(fd);
+end
+endmodule
