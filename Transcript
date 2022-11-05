@@ -1,0 +1,44 @@
+vsim -suppress 8323 work.fileopen +STRING=normal
+# vsim -suppress 8323 work.fileopen "+STRING=normal" 
+# Start time: 17:06:29 on Nov 04,2022
+# ** Note: (vsim-3813) Design is being optimized due to module recompilation...
+# Loading sv_std.std
+# Loading work.fileopen(fast)
+# ** Warning: (vsim-PLI-3691) Expected a system task, not a system function '$fgets'.
+#    Time: 0 ns  Iteration: 0  Region: /fileopen/#ublk#2908270#3 File: N:/Desktop/MSD_PROJECT/CHECK1.sv Line: 16
+run -all
+# File has opened successfully
+# Command: 2
+# Address: 4 0 8 e d 4
+# Command: 0
+# Address: 1 0 0 1 9 d
+# Command: 2
+# Address: 4 0 8 e d 8
+# Command: 1
+# Address: 1 0 0 1 9 d
+# Command: 2
+# Address: 4 0 8 e d c
+# System is running in normal mode
+vsim -suppress 8323 work.fileopen +STRING=silent
+# End time: 17:07:57 on Nov 04,2022, Elapsed time: 0:01:28
+# Errors: 0, Warnings: 3
+# vsim -suppress 8323 work.fileopen "+STRING=silent" 
+# Start time: 17:07:57 on Nov 04,2022
+# ** Note: (vsim-8009) Loading existing optimized design _opt1
+# Loading sv_std.std
+# Loading work.fileopen(fast)
+# ** Warning: (vsim-PLI-3691) Expected a system task, not a system function '$fgets'.
+#    Time: 0 ns  Iteration: 0  Region: /fileopen/#ublk#2908270#3 File: N:/Desktop/MSD_PROJECT/CHECK1.sv Line: 16
+run -all
+# File has opened successfully
+# Command: 2
+# Address: 4 0 8 e d 4
+# Command: 0
+# Address: 1 0 0 1 9 d
+# Command: 2
+# Address: 4 0 8 e d 8
+# Command: 1
+# Address: 1 0 0 1 9 d
+# Command: 2
+# Address: 4 0 8 e d c
+# System is running in silent mode
