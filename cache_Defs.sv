@@ -21,17 +21,20 @@ int nb_tag_field=11;
 
 bit[5:0] byte_offset;
 bit [14:0]index;
-bit [11:0] tag_field;
+bit [10:0] tag_field;
 bit [10:0]tag_array[262144:0];
 
 logic[31:0] hexaddress;
 
 function bit split(logic[31:0] hexaddress);
 begin
-assign tag_field=hexaddress[31:19];
+assign tag_field=hexaddress[31:21];
 assign index=hexaddress[20:6];
 assign byte_offset=hexaddress[5:0];
 
+$display("tag fields:%b",tag_field);
+$display("index:%b",index);
+$display("byte_offset:%b",byte_offset);
 return tag_field;
 return index;
 return byte_offset;
