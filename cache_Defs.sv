@@ -1,4 +1,3 @@
-
 package cache_Defs; 
 /* Bus Operation types */
 parameter READ=1; /* Bus Read */
@@ -15,6 +14,8 @@ parameter SENDLINE=2;/* Send requested cache line to L1 */
 parameter INVALIDATELINE=3; /* Invalidate a line in L1 */
 parameter EVICTLINE=4; /* Evict a line from L1 */
 
+parameter associativity = 8;// It shows set associativity of the LLC.
+
 int nb_byte_offset=6;// nb=no. of bits
 int nb_index=15;//8-way set associative
 int nb_tag_field=11;
@@ -23,7 +24,8 @@ bit[5:0] byte_offset;
 bit [14:0]index;
 bit [10:0] tag_field;
 bit [10:0]tag_array[262144:0];
-
+logic [6:0] way_states;
+logic [associativity-1:0] ways; // to create all the ways in a cache
 logic[31:0] hexaddress;
 
   function bit split(logic[31:0] hexaddress); //function for spliting address
