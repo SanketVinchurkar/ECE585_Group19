@@ -26,7 +26,7 @@ bit [10:0]tag_array[262144:0];
 
 logic[31:0] hexaddress;
 
-function bit split(logic[31:0] hexaddress);
+  function bit split(logic[31:0] hexaddress); //function for spliting address
 begin
 assign tag_field=hexaddress[31:21];
 assign index=hexaddress[20:6];
