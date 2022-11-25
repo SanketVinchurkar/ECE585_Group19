@@ -1,6 +1,6 @@
 module top ();
 initial begin
-logic [6:0] way_states;
+logic [6:0] way_states; //LRU bits
 logic [7:0] ways;
 int s;
 
