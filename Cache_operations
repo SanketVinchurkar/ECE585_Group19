@@ -1,0 +1,243 @@
+import cache_Defs::*;
+logic j = 0;
+logic i = 0;
+logic m=0;// internal counter for checking tag bits
+logic w=0;
+int LRU;
+
+function logic c_read([10:0]tag_field,[14:0]index); //cache READ
+begin
+set [32767:0]s;
+ for(j=0;j<8;j++)
+ begin
+ if (s[index].lc[j].tag == tag_field)
+ begin
+  if(s[index].lc[j].mesi[1:0] == 2'b00) // M state(HIT)
+   begin
+     $display("SENDLINE");
+   end
+  else if (s[index].lc[j].mesi[1:0] == 2'b01) // E state (HIT)
+   begin
+	 $display("SENDLINE");
+   end
+  else if (s[index].lc[j].mesi[1:0] == 2'b10) // S state(HIT)
+  begin
+	 $display("SENDLINE");
+  end
+  else if (s[index].lc[j].mesi[1:0] == 2'b11) // I state (MISS)
+  begin
+        $display("READ\n"); 
+        $display("SENDLINE");
+	s[index].lc[j].tag = tag_field;
+  end
+ end
+	else if (s[index].lc[j].tag !== tag_field) // MISS
+	begin
+ 	  m = m+1;
+	end
+ end
+if (m == 8)
+begin
+	for(i=0;i<8;i++)
+	begin
+	if (s[index].lc[j].mesi[1:0] == 2'b11)
+	begin
+        $display("READ\n"); 
+        $display("SENDLINE");
+	s[index].lc[j].tag = tag_field;
+	i=8;
+	end
+	else
+	begin
+	w = w+1;
+	end
+	end
+
+	if (w == 8)
+	begin
+	LRU=get_LRU(s[index].PLRU[6:0]);
+	if (ways[0]==1)
+	begin
+	 $display("READ\n"); 
+         $display("SENDLINE");
+	 s[index].lc[0].tag = tag_field;
+	end
+	else if(ways[1]==1)
+	 begin
+	 $display("READ\n"); 
+         $display("SENDLINE");
+	 s[index].lc[1].tag = tag_field;
+	 end
+	else if(ways[2]==1)
+	 begin
+	 $display("READ\n"); 
+         $display("SENDLINE");
+	 s[index].lc[2].tag = tag_field;
+	 end
+	else if(ways[3]==1)
+	 begin
+	 $display("READ\n"); 
+         $display("SENDLINE");
+	 s[index].lc[3].tag = tag_field;
+	 end
+	else if(ways[4]==1)
+	 begin
+	 $display("READ\n"); 
+         $display("SENDLINE");
+	 s[index].lc[4].tag = tag_field;
+	 end
+	else if(ways[5]==1)
+	 begin
+	 $display("READ\n"); 
+         $display("SENDLINE");
+	 s[index].lc[5].tag = tag_field;
+	 end
+	else if(ways[6]==1)
+	 begin
+	 $display("READ\n"); 
+         $display("SENDLINE");
+	 s[index].lc[6].tag = tag_field;
+	 end
+	else if(ways[7]==1)
+	 begin
+	 $display("READ\n"); 
+         $display("SENDLINE");
+	 s[index].lc[7].tag = tag_field;
+	 end
+	w =0;//reset
+	end
+end
+m=0;//reset m for next call.
+end
+endfunction
+
+
+function logic c_write([10:0]tag_field,[14:0]index); //cache write
+begin
+set [32767:0]s;
+ for(j=0;j<8;j++)
+ begin
+ if (s[index].lc[j].tag == tag_field)
+ begin
+  if(s[index].lc[j].mesi[1:0] == 2'b00) // M state(HIT)
+   begin
+   end
+  else if (s[index].lc[j].mesi[1:0] == 2'b01) // E state (HIT)
+   begin
+	 $display("SENDLINE");
+   end
+  else if (s[index].lc[j].mesi[1:0] == 2'b10) // S state(HIT)
+  begin
+	 $display("SENDLINE");
+  end
+  else if (s[index].lc[j].mesi[1:0] == 2'b11) // I state (MISS)
+  begin
+        $display("RWIM\n");
+        $display("SENDLINE");
+	s[index].lc[j].tag = tag_field;
+  end
+ end
+	else if (s[index].lc[j].tag !== tag_field) 
+	begin
+ 	  m = m+1;
+	end
+ end
+if (m == 8)//MISS
+begin
+	for(i=0;i<8;i++)
+	begin
+	if (s[index].lc[j].mesi[1:0] == 2'b11)
+	begin
+        $display("READ\n"); 
+        $display("SENDLINE");
+	s[index].lc[j].tag = tag_field;
+	i=8;
+	end
+	else
+	begin
+	w = w+1;
+	end
+	end
+
+	if (w == 8)
+	begin
+	LRU=get_LRU(s[index].PLRU[6:0]);
+	if (ways[0]==1)
+	begin
+	 $display("READ\n"); 
+         $display("SENDLINE");
+	 s[index].lc[0].tag = tag_field;
+	end
+	else if(ways[1]==1)
+	 begin
+	 $display("READ\n"); 
+         $display("SENDLINE");
+	 s[index].lc[1].tag = tag_field;
+	 end
+	else if(ways[2]==1)
+	 begin
+	 $display("READ\n"); 
+         $display("SENDLINE");
+	 s[index].lc[2].tag = tag_field;
+	 end
+	else if(ways[3]==1)
+	 begin
+	 $display("READ\n"); 
+         $display("SENDLINE");
+	 s[index].lc[3].tag = tag_field;
+	 end
+	else if(ways[4]==1)
+	 begin
+	 $display("READ\n"); 
+         $display("SENDLINE");
+	 s[index].lc[4].tag = tag_field;
+	 end
+	else if(ways[5]==1)
+	 begin
+	 $display("READ\n"); 
+         $display("SENDLINE");
+	 s[index].lc[5].tag = tag_field;
+	 end
+	else if(ways[6]==1)
+	 begin
+	 $display("READ\n"); 
+         $display("SENDLINE");
+	 s[index].lc[6].tag = tag_field;
+	 end
+	else if(ways[7]==1)
+	 begin
+	 $display("READ\n"); 
+         $display("SENDLINE");
+	 s[index].lc[7].tag = tag_field;
+	 end
+	w = 0;//reset
+	end
+
+
+end
+m=0; //reset m for next call.
+end
+endfunction
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
