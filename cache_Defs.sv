@@ -28,6 +28,20 @@ logic [6:0] way_states;
 logic [associativity-1:0] ways; // to create all the ways in a cache
 logic[31:0] hexaddress;
 
+//char message; // l1 to l2 to inform about commands.
+
+
+typedef struct packed {
+	logic [1:0] mesi;
+	logic [10:0] tag;
+} line;
+
+
+typedef struct packed {
+	line [associativity-1:0] lc;
+	logic [6:0] PLRU;
+} set;
+
   function bit split(logic[31:0] hexaddress); //function for spliting address
 begin
 assign tag_field=hexaddress[31:21];
