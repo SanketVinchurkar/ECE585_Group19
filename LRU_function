@@ -1,60 +1,87 @@
-package cache_Defs; 
-/* Bus Operation types */
-parameter READ=1; /* Bus Read */
-parameter WRITE=2; /* Bus Write */
-parameter INVALIDATE=3; /* Bus Invalidate */
-parameter RWIM=4; /* Bus Read With Intent to Modify */
-/* Snoop Result types */
-parameter NOHIT=0; /* No hit */
-parameter HIT=1; /* Hit */
-parameter HITM=2; /* Hit to modified line */
-/* L2 to L1 message types */
-parameter GETLINE=1; /* Request data for modified line in L1 */
-parameter SENDLINE=2;/* Send requested cache line to L1 */
-parameter INVALIDATELINE=3; /* Invalidate a line in L1 */
-parameter EVICTLINE=4; /* Evict a line from L1 */
+module top ();
+initial begin
+logic [6:0] way_states; //LRU bits
+logic [7:0] ways;
+int s;
 
-parameter associativity = 8;// It shows set associativity of the LLC.
+s = update_LRU(8'b00100000,way_states);
+$display("s = %7b",update_LRU(8'b00100000,way_states));
+end
 
-int nb_byte_offset=6;// nb=no. of bits
-int nb_index=15;//8-way set associative
-int nb_tag_field=11;
-
-bit[5:0] byte_offset;
-bit [14:0]index;
-bit [10:0] tag_field;
-bit [10:0]tag_array[262144:0];
-logic [6:0] way_states;
-logic [associativity-1:0] ways; // to create all the ways in a cache
-logic[31:0] hexaddress;
-
-//char message; // l1 to l2 to inform about commands.
-
-
-typedef struct packed {
-	logic [1:0] mesi;
-	logic [10:0] tag;
-} line;
-
-
-typedef struct packed {
-	line [associativity-1:0] lc;
-	logic [6:0] PLRU;
-} set;
-
-  function bit split(logic[31:0] hexaddress); //function for spliting address
+function byte update_LRU(input [7:0]ways, output [6:0]way_states); //updates LRU
 begin
-assign tag_field=hexaddress[31:21];
-assign index=hexaddress[20:6];
-assign byte_offset=hexaddress[5:0];
+if (ways[0] == 1)
+way_states[6:4] = 0;
 
-$display("tag fields:%b",tag_field);
-$display("index:%b",index);
-$display("byte_offset:%b",byte_offset);
-return tag_field;
-return index;
-return byte_offset;
+else if(ways[1] == 1)
+begin
+way_states[6:5] = 2'b00;
+way_states[4] = 1;
+end
+
+else if(ways[2] == 1)
+begin
+way_states[6] = 0;
+way_states[5] = 1;
+way_states[4] = 0;
+end
+
+else if(ways[3] == 1)
+begin
+way_states[6] = 0;
+way_states[5:4] = 2'b11;
+end
+
+else if(ways[4] == 1)
+begin
+way_states[6] = 1;
+way_states[5:4] = 2'b00;
+end
+
+else if(ways[5] == 1)
+begin
+way_states[6] = 1;
+way_states[5] = 0;
+way_states[4] = 1;
+end
+
+else if(ways[6] == 1)
+begin
+way_states[6:5] = 2'b11;
+way_states[4] = 0;
+end
+
+else if (ways[7] == 1)
+way_states[6:4] = 2'b11;
+
+return way_states[6:0];
+
+function byte get_LRU(output [7:0]ways, input [6:0]way_states);
+begin
+if(way_states[6:4] == 0)
+ways[7:0] = 1;
+
+else if(way_states[6:5] == 0 && way_states[4] == 1)
+ways[7:0] = 2;
+
+else if(way_states[6] == 0 && way_states[5] == 1 && way_states[4] == 0)
+ways[7:0] = 4;
+
+else if(way_states[6] === 0 && way_states[5:4] == 1)
+ways[7:0] = 8;
+
+else if(way_states[6] == 1 && way_states[5:4] == 0)
+ways[7:0] = 16;
+
+else if(way_states[6] == 1 && way_states[5] == 0 && way_states[4] == 0)
+ways[7:0] = 32;
+
+else if(way_states[6:5] == 1 && way_states[4] == 0)
+ways[7:0] = 64;
+
+else if(way_states[6:4] == 1)
+ways[7:0] = 128;
+
 end
 endfunction
-
-endpackage
+endmodule
