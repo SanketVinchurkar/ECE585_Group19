@@ -1,50 +1,64 @@
+import
+module trace_control(
+	input cmd,
+	input address
+);
+
+cache cache_opertations();			//join the ports or instanciate the ports
+
+
+
 always@(cmd) begin
 	case(cmd)
 	
 	0 : begin
-		cmd = cpu_read
-		address = hexaddress
+		cmd = cpu_read;
+		address = hexaddress;
 		end                       //if cmd = 0, jump to read 
 		
 		
 	1 : begin
-		cmd = cpu_write
-		address = hexaddress
+		cmd = cpu_write;
+		address = hexaddress;
 		end                   	//if cmd =1, jump to write
 	2 : begin
-		cmd = IN_req
-		address = hexaddress
+		cmd = IN_req;
+		address = hexaddress;
 		end						//if cmd = 2, jmp to L1 instruction cache
 	3 : begin
-		cmd = snp_INV
-		address = hexaddress
+		cmd = snp_INV;
+		address = hexaddress;
 		end   					// if cmd = 3, jump to snoop_invalidate
 		
 	4 :	begin
-		cmd = snp_read
-		address = hexaddress
+		cmd = snp_read;
+		address = hexaddress;
 		end						// if cmd = 4, jmp to snoop_read
 		
 	5 : begin
-		cmd = snp_write
-		address = hexaddress
+		cmd = snp_write;
+		address = hexaddress;
 		end						//if cmd = 5, jmp to snoop_write
 		
 	6 : begin
-		cmd = snp_rwim
-		address = hexaddress
+		cmd = snp_rwim;
+		address = hexaddress;
 		end						//if cmd = 6, jmp to snoop "read with intent to modify"
 		
 	8 : begin
-		cmd = clr_cache
-		address = hexaddress
+		cmd = clr_cache;
+		address = hexaddress;
 		end						//if cmd = 8, jmp to clear the cache
 		
 	9 : begin
-		cmd = prnt
-		address = hexaddress
+		cmd = prnt;
+		address = hexaddress;
 		end						//if cmd = 9, jmp to print display
 		
-	default : cmd = IDLE
-			  address = hexaddress
+	default :
+	begin	
+			  cmd = cmd;
+			  address = hexaddress;
 	endcase
+end
+endmodule
