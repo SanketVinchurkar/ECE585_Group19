@@ -1,0 +1,57 @@
+task MESI;
+
+		if(hit) 
+		begin
+		if (tag_hit) begin
+				M:
+				begin 
+					if( cmd == cpu_read)begin	
+							array = M;
+					end
+					else if (cmd == cpu_write)
+					begin
+							array = M;
+					end
+				end
+				E:
+				begin
+					if(cmd == cpu_read) 
+						begin
+							array = E;
+						end
+					else if (cmd == cpu_write)
+						begin
+							array = M;
+						end
+				end
+				S:
+				begin
+						if (cmd == cpu_read) 
+						begin
+							array = S;
+						end
+						else if (cmd == cpu_write)
+						begin 
+						array = M;
+						bus_op ();								//dont kn what but since shared it must have a signal with bus_op
+						end
+				end
+				I:
+				begin
+						if (cmd == cpu_read)
+						begin
+						bus_op(read, hexaddress);
+						if ((snp==hit) || (snp==hitm))
+						begin
+						array = S;
+						end
+						else if (snp= miss) 
+						begin
+						array = E;
+						end
+						else if (cmd == cpu_write)
+						begin
+							array = M;
+							bus_op(rwim, hexaddress);
+						end
+				end
