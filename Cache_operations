@@ -1,6 +1,5 @@
 import cache_Defs::*;
 logic j = 0;
-logic i = 0;
 logic m=0;// internal counter for checking tag bits
 logic w=0;
 int gLRU, uLRU;
@@ -56,7 +55,7 @@ set [32767:0]s;
  end
 if (m == 8)
 begin
-	for(i=0;i<8;i++)
+	for(j=0;j<8;j++)
 	begin
 	if (s[index].lc[j].mesi[1:0] == 2'b11)
 	begin
@@ -72,7 +71,7 @@ begin
 	begin
 	s[index].lc[j].mesi[1:0] = 2'b01;// if c is high data will be in E
 	end
-	i=8;
+	j=8;
 	end
 	else
 	begin
@@ -83,11 +82,9 @@ begin
 	if (w == 8)
 	begin
 	gLRU=get_LRU(s[index].PLRU[6:0]);
-	if (ways[0]==1)
-	begin
 	 $display("READ\n"); 
          $display("SENDLINE");
-	 s[index].lc[0].tag = tag_field;
+	 s[index].lc[j].tag = tag_field;
 	 if (c == 0)
 	 begin
 	 s[index].lc[j].mesi[1:0] = 2'b10;// if c is low data will be in S
@@ -98,120 +95,9 @@ begin
 	 s[index].lc[j].mesi[1:0] = 2'b01;// if c is high data will be in E
 	 end	
 	end
-	else if(ways[1]==1)
-	 begin
-	 $display("READ\n"); 
-         $display("SENDLINE");
-	 s[index].lc[1].tag = tag_field;
-	if (c == 0)
-	begin
-	s[index].lc[j].mesi[1:0] = 2'b10;// if c is low data will be in S
-	end
 	
-	else if (c == 1)
-	begin
-	s[index].lc[j].mesi[1:0] = 2'b01;// if c is high data will be in E
-	end
-	 
-	 end
-	else if(ways[2]==1)
-	 begin
-	 $display("READ\n"); 
-         $display("SENDLINE");
-	 s[index].lc[2].tag = tag_field;
-	if (c == 0)
-	begin
-	s[index].lc[j].mesi[1:0] = 2'b10;// if c is low data will be in S
-	end
-	
-	else if (c == 1)
-	begin
-	s[index].lc[j].mesi[1:0] = 2'b01;// if c is high data will be in E
-	end
-	 end
 
-	else if(ways[3]==1)
-	 begin
-	 $display("READ\n"); 
-         $display("SENDLINE");
-	 s[index].lc[3].tag = tag_field;
-	if (c == 0)
-	begin
-	s[index].lc[j].mesi[1:0] = 2'b10;// if c is low data will be in S
 	end
-	
-	else if (c == 1)
-	begin
-	s[index].lc[j].mesi[1:0] = 2'b01;// if c is high data will be in E
-	end
-	 end
-
-	else if(ways[4]==1)
-	 begin
-	 $display("READ\n"); 
-         $display("SENDLINE");
-	 s[index].lc[4].tag = tag_field;
-	if (c == 0)
-	begin
-	s[index].lc[j].mesi[1:0] = 2'b10;// if c is low data will be in S
-	end
-	
-	else if (c == 1)
-	begin
-	s[index].lc[j].mesi[1:0] = 2'b01;// if c is high data will be in E
-	end
-	 end
-
-	else if(ways[5]==1)
-	 begin
-	 $display("READ\n"); 
-         $display("SENDLINE");
-	 s[index].lc[5].tag = tag_field;
-	if (c == 0)
-	begin
-	s[index].lc[j].mesi[1:0] = 2'b10;// if c is low data will be in S
-	end
-	
-	else if (c == 1)
-	begin
-	s[index].lc[j].mesi[1:0] = 2'b01;// if c is high data will be in E
-	end
-	 end
-
-	else if(ways[6]==1)
-	 begin
-	 $display("READ\n"); 
-         $display("SENDLINE");
-	 s[index].lc[6].tag = tag_field;
-	if (c == 0)
-	begin
-	s[index].lc[j].mesi[1:0] = 2'b10;// if c is low data will be in S
-	end
-	
-	else if (c == 1)
-	begin
-	s[index].lc[j].mesi[1:0] = 2'b01;// if c is high data will be in E
-	end
-
-	 end
-	else if(ways[7]==1)
-	 begin
-	 $display("READ\n"); 
-         $display("SENDLINE");
-	 s[index].lc[7].tag = tag_field;
-	if (c == 0)
-	begin
-	s[index].lc[j].mesi[1:0] = 2'b10;// if c is low data will be in S
-	end
-	
-	else if (c == 1)
-	begin
-	s[index].lc[j].mesi[1:0] = 2'b01;// if c is high data will be in E
-	end
-	 end
-	w =0;//reset
-	end
-end
 m=0;//reset m for next call.
 end
 endfunction
@@ -250,7 +136,7 @@ set [32767:0]s;
  end
 if (m == 8)//MISS
 begin
-	for(i=0;i<8;i++)
+	for(j=0;j<8;j++)
 	begin
 	if (s[index].lc[j].mesi[1:0] == 2'b11)
 	begin
@@ -258,7 +144,7 @@ begin
         $display("SENDLINE");;
 	s[index].lc[j].tag = tag_field;
         s[index].lc[j].mesi[1:0] = 2'b00;
-	i=8;
+	j=8;
 	end
 	else
 	begin
@@ -269,62 +155,12 @@ begin
 	if (w == 8)
 	begin
 	gLRU=get_LRU(s[index].PLRU[6:0]);
-	if (ways[0]==1)
-	begin
         $display("RWIM\n");
         $display("SENDLINE");
-	 s[index].lc[0].tag = tag_field;
+	 s[index].lc[j].tag = tag_field;
 	 s[index].lc[j].mesi[1:0] = 2'b00;
-	end
-	else if(ways[1]==1)
-	 begin
-        $display("RWIM\n");
-        $display("SENDLINE");
-	 s[index].lc[1].tag = tag_field;
-	 s[index].lc[j].mesi[1:0] = 2'b00;
-	 end
-	else if(ways[2]==1)
-	 begin
-        $display("RWIM\n");
-        $display("SENDLINE");
-	 s[index].lc[2].tag = tag_field;
-	 s[index].lc[j].mesi[1:0] = 2'b00;
-	 end
-	else if(ways[3]==1)
-	 begin
-        $display("RWIM\n");
-        $display("SENDLINE");
-	 s[index].lc[3].tag = tag_field;
-	 s[index].lc[j].mesi[1:0] = 2'b00;
-	 end
-	else if(ways[4]==1)
-	 begin
-        $display("RWIM\n");
-        $display("SENDLINE");
-	 s[index].lc[4].tag = tag_field;
-	 s[index].lc[j].mesi[1:0] = 2'b00;
-	 end
-	else if(ways[5]==1)
-	 begin
-	 $display("READ\n"); 
-         $display("SENDLINE");
-	 s[index].lc[5].tag = tag_field;
-	 s[index].lc[j].mesi[1:0] = 2'b00;
-	 end
-	else if(ways[6]==1)
-	 begin
-	 $display("READ\n"); 
-         $display("SENDLINE");
-	 s[index].lc[6].tag = tag_field;
-	 s[index].lc[j].mesi[1:0] = 2'b00;
-	 end
-	else if(ways[7]==1)
-	 begin
-        $display("RWIM\n");
-        $display("SENDLINE");
-	 s[index].lc[7].tag = tag_field;
-	 s[index].lc[j].mesi[1:0] = 2'b00;
-	 end
+
+
 	w = 0;//reset
 	end
 
