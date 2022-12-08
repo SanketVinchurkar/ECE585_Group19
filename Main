@@ -1,11 +1,21 @@
 module top(
 );
-
+import cache_Defs::*;
 int fd;
 int mode;
-string hexaddress,filename,flag;
+real t,r;
+logic [31:0] hexaddress1;
+logic flag;
+string filename;
 initial begin
-    $value$plusargs("string=%s",filename);// user specified filename
+    for ( int i = 0; i < totalSets; i++) begin
+	s[i].PLRU = 'x; 
+	for (int  k = 0; k < 8; k++) begin
+	s[i].lc[k].tag = 'x;
+	s[i].lc[k].mesi = I;
+	end
+	end
+    $value$plusargs("string=%s",filename);
     fd = $fopen(filename,"r");   //file in same directory of the code folder.
     if (fd)
      begin
@@ -23,13 +33,21 @@ if ($value$plusargs("STRING=%d",flag)) //takes flag has input to determine wheth
             else if (flag == 1)
                  $display("System is running in silent mode");
       end
-
-
-          while($fscanf(fd,"%d %s",mode,hexaddress)== 2) // scans and get values.
-            $display("%d %s ",mode,hexaddress);
-
-
-   
+          while($fscanf(fd,"%d %h",mode,hexaddress1)== 2) // scans and get values
+		  begin
+		  LLC_cache_design(hexaddress1,mode,flag);
+		  end   
 $fclose(fd);
+t=wr+re;
+r=(hit/t);
+$display("**************************KEY STATISTICS****************************\n");
+$display("Cache miss = %d",miss);
+$display("Cache hit = %d",hit);
+$display("Cache write = %d",wr);
+$display("Cache read = %d",re);
+$display("Cache hit ratio = %f or in percentage =%f",r,r*100);
+//$finish;
 end
 endmodule:top
+
+
