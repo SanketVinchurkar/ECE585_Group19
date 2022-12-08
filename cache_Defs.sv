@@ -5,9 +5,6 @@ parameter WRITE=2; /* Bus Write */
 parameter INVALIDATE=3; /* Bus Invalidate */
 parameter RWIM=4; /* Bus Read With Intent to Modify */
 /* Snoop Result types */
-parameter NOHIT=0; /* No hit */
-parameter HIT=1; /* Hit */
-parameter HITM=2; /* Hit to modified line */
 /* L2 to L1 message types */
 parameter GETLINE=1; /* Request data for modified line in L1 */
 parameter SENDLINE=2;/* Send requested cache line to L1 */
@@ -29,11 +26,11 @@ bit [nb_index-1:0]index;
 bit [nb_tag_field-1:0] tag_field; 
 
 
-//char message; // l1 to l2 to inform about commands.
-
+typedef enum logic[1:0] {M = 2'b00, E = 2'b01, S = 2'b10,  I = 2'b11}states;
+typedef enum logic[1:0] {NOHIT = 2'b00, HIT = 2'b01, HITM = 2'b10}snoopstate;
 
 typedef struct packed {
-logic [1:0] mesi;
+states mesi;
 logic [10:0] tag;
 } line;
 
@@ -49,17 +46,17 @@ int j;
 int m;// internal counter for checking tag bits
 int w;
 
-int snoopresult;
+snoopstate snoopresult;
 int re=0,wr=0,hit=0,miss=0;
 
 function int GetSnoopResult(logic [31:0]address);
 begin
 if (address[1:0] == 2'b10 || address[1:0] == 2'b11)
-snoopresult = 0;
+snoopresult = NOHIT;
 else if (address[1:0] == 2'b01)
-snoopresult = 2;
+snoopresult = HITM;
 else if (address[1:0] == 2'b00)
-snoopresult = 1;
+snoopresult = HIT;
 end
 return snoopresult;
 endfunction
@@ -67,7 +64,7 @@ endfunction
 function int PutSnoopResult(logic [31:0]address,flag); 
 begin
 if (!flag)
-$display("SnoopAddress address=%h  SnoopResult snoopresult=%2b", address,snoopresult);
+$display("SnoopAddress address=%h  SnoopResult snoopresult=%s", address,snoopresult);
 end
 endfunction
 
@@ -84,7 +81,7 @@ begin
 int snoopingresult; 
 snoopingresult= GetSnoopResult(address);
 if (!flag)
-$display("busop: %s, address: %h Snoop Result: %d",busop,address,snoopresult);
+$display("busop: %s, address: %h Snoop Result: %s",busop,address,snoopresult);
 end
 endfunction
 
@@ -94,7 +91,7 @@ begin
 m=1;
  for(j=0;j<8;j++)
  begin
- if (s[index].lc[j].tag == tag_field && s[index].lc[j].mesi[1:0] != 2'b11)//checking for hit
+ if (s[index].lc[j].tag == tag_field && s[index].lc[j].mesi != I)//checking for hit
  begin
  hit=hit+1;
 m=0;
@@ -112,7 +109,7 @@ if (m)   // I state (MISS)
 for(j=0;j<8;j++)
   begin
 //$display("MESI_0=%d",s[index].lc[0].mesi);
-if (s[index].lc[j].mesi[1:0] == 2'b11) begin
+if (s[index].lc[j].mesi == I) begin
 miss=miss+1; 
 m=0;
 //$display("hit = %d miss = %d j=%d ind=%15b",hit,miss,j,index);
@@ -125,12 +122,12 @@ s[index].lc[j].tag = tag_field;
 //$display("tag=%11b",s[index].lc[j].tag);
 if(GetSnoopResult(address[31:0])==1 || GetSnoopResult(address[31:0])==2)
 begin
-s[index].lc[j].mesi = 2'b10;
+s[index].lc[j].mesi = S;
 end
 
 if(GetSnoopResult(address[31:0])==0)
 begin
-s[index].lc[j].mesi = 2'b01;
+s[index].lc[j].mesi = E;
 end
 //$display("MESI=%d",s[index].lc[j].mesi);
 //$display("j value is %d",j);
@@ -145,7 +142,7 @@ if(m)
 begin 
 //$display("%b",s[index].PLRU);
 get_LRU(); 
-if(s[index].lc[j].mesi == 2'b00) begin
+if(s[index].lc[j].mesi == M) begin
 MessageToCache("GETLINE",address[31:0],flag);
 BusOperation("WRITE",address[31:0],flag);
 end
@@ -155,12 +152,12 @@ s[index].lc[j].tag=tag_field;
 update_LRU();
 if(GetSnoopResult(address[31:0])==1 || GetSnoopResult(address[31:0])==2)
 begin
-s[index].lc[j].mesi = 2'b10;
+s[index].lc[j].mesi = S;
 end
 
 if(GetSnoopResult(address[31:0])==0)
 begin
-s[index].lc[j].mesi = 2'b01;
+s[index].lc[j].mesi = E;
 end
 m=0;
 
@@ -176,11 +173,12 @@ begin
 m=1;
  for(j=0;j<8;j++)
  begin
- if ((s[index].lc[j].tag == tag_field)&&(s[index].lc[j].mesi!=2'b11))
+ if ((s[index].lc[j].tag == tag_field)&&(s[index].lc[j].mesi!=I))
  begin
   hit=hit+1;
   update_LRU();
   MessageToCache("SENDLINE",address[31:0],flag);
+  s[index].lc[j].mesi = M;
 m=0;
 break;
 end
@@ -188,13 +186,14 @@ end
 if(m)begin
  for(j=0;j<8;j++)
 	begin
-if (s[index].lc[j].mesi[1:0] == 2'b11) // I state (MISS)
+if (s[index].lc[j].mesi == I) // I state (MISS)
   begin
+	miss=miss+1;
 	BusOperation("RWIM",address[31:0],flag);
         MessageToCache("SENDLINE",address[31:0],flag);
 	update_LRU();
 	s[index].lc[j].tag = tag_field;
-      s[index].lc[j].mesi[1:0] = 2'b00;
+      s[index].lc[j].mesi = M;
 m=0;
 break;
 end
@@ -203,7 +202,7 @@ end
 	
 if(m)begin
 get_LRU();
-if(s[index].lc[j].mesi == 2'b00) begin
+if(s[index].lc[j].mesi == M) begin
 MessageToCache("GETLINE",address[31:0],flag);
 BusOperation("WRITE",address[31:0],flag);
 end
@@ -213,8 +212,9 @@ update_LRU();
 //	$display("tag=%11b",s[index].lc[0].tag);
 	BusOperation("RWIM",address[31:0],flag);
         MessageToCache("SENDLINE",address[31:0],flag);
-        s[index].lc[j].mesi[1:0] = 2'b00;
+        s[index].lc[j].mesi = M;
 m=0;
+miss=miss+1;
 end
 end
 endfunction
@@ -357,12 +357,12 @@ begin
 for (int i=0;i<8;i++) begin
 if (s[index].lc[i].tag == tag_field) begin
 //update_LRU(j);
-case (s[index].lc[i].mesi[1:0])
-2'b00: s[index].lc[i].mesi[1:0]= 2'b11; 
-2'b01: s[index].lc[i].mesi[1:0]= 2'b11;
-2'b10: s[index].lc[i].mesi[1:0]= 2'b11;
-2'b11: s[index].lc[i].mesi[1:0]= 2'b11;
-default: s[index].lc[i].mesi[1:0]= 2'b11;
+case (s[index].lc[i].mesi)
+M: s[index].lc[i].mesi= I; 
+E: s[index].lc[i].mesi= I;
+S: s[index].lc[i].mesi= I;
+I: s[index].lc[i].mesi= I;
+default: s[index].lc[i].mesi = I;
 endcase
 MessageToCache("INVALIDATELINE",hexaddress[31:0],mode);
 end
@@ -374,12 +374,12 @@ begin
 for (int i=0;i<8;i++) begin
 if (s[index].lc[i].tag == tag_field) begin
 //update_LRU(j);
-case (s[index].lc[i].mesi[1:0])
-2'b00: s[index].lc[i].mesi[1:0]= 2'b10; // need to write flush
-2'b01: s[index].lc[i].mesi[1:0]= 2'b10;
-2'b10: s[index].lc[i].mesi[1:0]= 2'b10;
-2'b11: s[index].lc[i].mesi[1:0]= 2'b00;
-default: s[index].lc[i].mesi[1:0]= 2'b00;
+case (s[index].lc[i].mesi)
+M: s[index].lc[i].mesi= S; // need to write flush
+E: s[index].lc[i].mesi= S;
+S: s[index].lc[i].mesi= S;
+I: s[index].lc[i].mesi= S;
+default: s[index].lc[i].mesi= S;
 
 endcase 
 end
@@ -391,12 +391,12 @@ begin
 for (int i=0;i<8;i++) begin
 if (s[index].lc[i].tag == tag_field) begin
 //update_LRU(k);
-case (s[index].lc[i].mesi[1:0])
-2'b00: s[index].lc[i].mesi[1:0]= 2'b11; 
-2'b01: s[index].lc[i].mesi[1:0]= 2'b11;
-2'b10: s[index].lc[i].mesi[1:0]= 2'b11;
-2'b11: s[index].lc[i].mesi[1:0]= 2'b11;
-default: s[index].lc[i].mesi[1:0]= 2'b11;
+case (s[index].lc[i].mesi)
+M: s[index].lc[i].mesi= I; 
+E: s[index].lc[i].mesi= I;
+S: s[index].lc[i].mesi= I;
+I: s[index].lc[i].mesi= I;
+default: s[index].lc[i].mesi=I;
 endcase 
 end
 end
@@ -407,14 +407,14 @@ begin
 for (int i=0;i<8;i++) begin
 if (s[index].lc[i].tag == tag_field) begin
 //update_LRU(k);
-case (s[index].lc[i].mesi[1:0])
-2'b00: s[index].lc[i].mesi[1:0]= 2'b11;
-2'b01: s[index].lc[i].mesi[1:0]= 2'b11;
-2'b10: s[index].lc[i].mesi[1:0]= 2'b11;
-2'b11: s[index].lc[i].mesi[1:0]= 2'b11;
-default: s[index].lc[i].mesi[1:0]= 2'b11;
+case (s[index].lc[i].mesi)
+M: s[index].lc[i].mesi= I;
+E: s[index].lc[i].mesi= I;
+S: s[index].lc[i].mesi= I;
+I: s[index].lc[i].mesi= I;
+default: s[index].lc[i].mesi= I;
 endcase 
-if(s[index].lc[j].mesi == 2'b00) begin
+if(s[index].lc[j].mesi == M) begin
 MessageToCache("GETLINE",hexaddress[31:0],mode);
 BusOperation("WRITE",hexaddress[31:0],mode);
 end
@@ -428,7 +428,7 @@ begin
 for ( int i = 0; i < totalSets; i++) begin;
 for (int  k = 0; k < 8; k++) begin;
 s[i].lc[k].tag = 'x;
-s[i].lc[k].mesi = 2'b11;
+s[i].lc[k].mesi =I;
                 s[i].PLRU = 'x; 
 end
 end
@@ -436,11 +436,12 @@ end
 
 else if(n == 9)
 begin
+$display("***********************************************************\n");
 for ( int i = 0; i < totalSets; i++) begin
 for (int  k = 0; k < 8; k++) begin
-if(s[i].lc[k].mesi == 2'b00 || s[i].lc[k].mesi == 2'b01 || s[i].lc[k].mesi == 2'b10)
+if(s[i].lc[k].mesi == M || s[i].lc[k].mesi == E || s[i].lc[k].mesi == S)
 begin
-$display("Tag=%p Index=%d Mesi=%p",s[i].lc[k].tag,i,s[i].lc[k].mesi);
+$display("Tag=%p Index=%d Mesi=%s",s[i].lc[k].tag,i,s[i].lc[k].mesi);
 end
 end
 end
